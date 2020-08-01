@@ -1,0 +1,47 @@
+1 #include "spi.h"
+ 2 #include "delay.h" 
+ 3 #include "stm32f4xx.h"
+ 4 
+ 5 //CPOL=0，CPHA=0
+ 6 u8 SOFT_SPI_RW(u8 byte) 
+ 7 { 
+ 8     u8 i;
+ 9     u8 Temp=0;                                                //接收数据存储
+10     SPI1_SCK = 0;
+11     delay_init(168);                                    //初始化延时函数
+12     for(i=0;i<8;i++)                                // 循环8次 
+13     {     
+14         if(byte&0x80) SPI1_MOSI = 1;      //若字节最高位为1，则输出高
+15         else SPI1_MOSI = 0;                //若字节最高位为0，则输出低 
+16         byte <<= 1;                                        //低一位移位到最高位 
+17         delay_us(1);                                        //延时1us
+18         SPI1_SCK = 1;                                    //拉低时钟 
+19         Temp <<= 1;                                        //数据左移 
+20         if(SPI1_MISO) Temp++;                        //若从从机接收到高电平，数据自加一 
+21         delay_us(1);                                        //延时1us
+22         SPI1_SCK = 0;                                        //拉低时钟    
+23     } 
+24     return (Temp);                                        //返回数据 
+25 }
+26 
+27 void SPIInit(void)
+28 {         
+29     GPIO_InitTypeDef GPIO_InitStructure;
+30     RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB,ENABLE);//使能PORTB时钟 
+31     
+32     //PB2,PB3,PB5设置
+33   GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2 | GPIO_Pin_3 | GPIO_Pin_5;
+34   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+35   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+36   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+37   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+38     GPIO_Init(GPIOB,&GPIO_InitStructure);
+39     //PB4设置
+40     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
+41   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+42   GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+43   GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
+44   GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
+45     GPIO_Init(GPIOB,&GPIO_InitStructure);
+46 }
+

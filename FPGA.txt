@@ -1,0 +1,126 @@
+1 `timescale 1 ns/ 1 ps
+  2 module spi_s_vlg_tst();
+  3 // constants                                           
+  4 // general purpose registers
+  5 reg eachvec;
+  6 // test vector input registers
+  7 reg I_clk;
+  8 reg [7:0] I_data_in;
+  9 reg I_rst_n;
+ 10 reg I_spi_cs;
+ 11 reg I_spi_miso;
+ 12 reg I_spi_sck;
+ 13 // wires                                               
+ 14 wire [7:0]  O_data_out;
+ 15 wire O_rx_done;
+ 16 wire O_spi_mosi;
+ 17 wire O_tx_done;
+ 18 wire rxd_flag;
+ 19 wire sck_negedge;
+ 20 wire sck_posedge;
+ 21 wire txd_flag;
+ 22 
+ 23 // assign statements (if any)                          
+ 24 spi_s i1 (
+ 25 // port map - connection between master ports and signals/registers   
+ 26     .I_clk(I_clk),
+ 27     .I_data_in(I_data_in),
+ 28     .I_rst_n(I_rst_n),
+ 29     .I_spi_cs(I_spi_cs),
+ 30     .I_spi_miso(I_spi_miso),
+ 31     .I_spi_sck(I_spi_sck),
+ 32     .O_data_out(O_data_out),
+ 33     .O_rx_done(O_rx_done),
+ 34     .O_spi_mosi(O_spi_mosi),
+ 35     .O_tx_done(O_tx_done),
+ 36     .rxd_flag(rxd_flag),
+ 37     .sck_negedge(sck_negedge),
+ 38     .sck_posedge(sck_posedge),
+ 39     .txd_flag(txd_flag)
+ 40 );
+ 41 reg [2:0]state;
+ 42 initial                                                
+ 43 begin                                                  
+ 44     I_clk = 0;
+ 45     I_rst_n = 0;
+ 46     I_data_in = 8'h00;
+ 47     I_spi_miso = 0;
+ 48     I_spi_cs = 1;
+ 49     I_spi_sck = 0;
+ 50     #100
+ 51     I_rst_n = 1;
+ 52     I_spi_cs = 0;
+ 53 end                                                    
+ 54 always                                                                  
+ 55 begin                                                  
+ 56     #10 I_clk = ~I_clk;  
+ 57 end
+ 58     
+ 59 always                                                                  
+ 60 begin                                                  
+ 61     #20 I_spi_sck = ~I_spi_sck; 
+ 62 end
+ 63 
+ 64 always @(posedge I_spi_sck,negedge I_rst_n)               
+ 65 begin                                                  
+ 66     if(!I_rst_n)
+ 67         I_data_in <= 8'h00;
+ 68     else if(I_data_in == 8'hff)
+ 69     begin
+ 70         I_data_in <= 8'h00;
+ 71     end
+ 72     else if(txd_flag)
+ 73         I_data_in <= I_data_in + 1'b1;
+ 74 end                
+ 75 //11101010
+ 76 always @(negedge I_spi_sck,negedge I_rst_n)
+ 77 begin 
+ 78     if(!I_rst_n)
+ 79         state <= 3'b000;
+ 80     else
+ 81     case(state)
+ 82         3'd0:
+ 83         begin
+ 84             state <= state + 1;
+ 85             I_spi_miso <= 1'b1;
+ 86         end
+ 87         3'd1:
+ 88         begin
+ 89             state <= state + 1;
+ 90             I_spi_miso <= 1'b1;
+ 91         end
+ 92         3'd2:
+ 93         begin
+ 94             state <= state + 1;
+ 95             I_spi_miso <= 1'b1;
+ 96         end
+ 97         3'd3:
+ 98         begin
+ 99             state <= state + 1;
+100             I_spi_miso <= 1'b0;
+101         end
+102         3'd4:
+103         begin
+104             state <= state + 1;
+105             I_spi_miso <= 1'b1;
+106         end
+107         3'd5:
+108         begin
+109             state <= state + 1;
+110             I_spi_miso <= 1'b0;
+111         end
+112         3'd6:
+113         begin
+114             state <= state + 1;
+115             I_spi_miso <= 1'b1;
+116         end
+117         3'd7:
+118         begin
+119             state <= state + 1;
+120             I_spi_miso <= 1'b0;
+121         end
+122         default:state <= 3'b000;
+123     endcase
+124 end
+125 endmodule
+
