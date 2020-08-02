@@ -5,3 +5,4 @@
 小组成员：陈雯臻、潘钰滢、白宇堃。
 板卡型号：Xilinx Spartan-7 XC7S15。
 
+！[image](https://github.com/wenzhenvivi/ESP32-FPGA-QSPI/blob/master/images/%E5%9B%BE%E7%89%871.png)
